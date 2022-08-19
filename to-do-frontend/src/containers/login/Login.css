@@ -1,0 +1,28 @@
+.paper{
+     margin-top: 80px;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+}
+.avatar {
+    margin: 10px;
+    background-color: #f50057;
+}
+.form{
+    width: 100%;
+    margin-top: 10px;
+}
+.submit {
+    margin: 30px 0px 10px 0px;
+}
+.guideStyle{
+    position: relative;
+    top: -7px;
+    margin: auto;
+    width: 35vw;
+    text-align: center;
+    font-size: 9.5px;
+    font-family: "Comfortaa sans-serif";
+    box-sizing: borderbox;
+    color: #f10000;
+  }
