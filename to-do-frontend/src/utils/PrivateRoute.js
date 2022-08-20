@@ -4,7 +4,6 @@ import { isAuthenticated } from './AuthUtils';
 
 const PrivateRoutes = () => {
     const authenticated = isAuthenticated();
-    console.log('authenticated', authenticated);
     return (
         authenticated ? <Outlet /> : <Navigate replace to="/login" />
     )

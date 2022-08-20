@@ -20,6 +20,12 @@ export const getHeader = () => {
         }
     }
 }
+export const getBearerToken = () => {
+    const token = decryptStoredToken();
+    return {
+        Authorization: `Bearer ${token}`
+    }
+}
 
 export const encryptAndStoreTokenAndUserName = (token) => {
     var ciphertext = CryptoAES.encrypt(token, 'fafhao#4fa');
@@ -35,7 +41,6 @@ export const isAuthenticated = () => {
         if (token) {
             var encoded = decryptStoredToken();
             var decoded = jwt_decode(encoded);
-            console.log('expired', Date.now() >= decoded.exp * 1000);
             const isExpired = Date.now() >= decoded.exp * 1000
             return (!isExpired);
         } else {
