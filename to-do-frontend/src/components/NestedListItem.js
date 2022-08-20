@@ -48,21 +48,20 @@ export default function NestedListItem(props) {
       })
     }
   }
-  const handleSubTaskCheck = (event) => {
-    event.preventDefault();
+
+  const deleteTaskHandler = async (id) => {
+    await deleteATaskHandler(id);
+  }
+
+  const handleSubTaskCheck = (index) => {
     if (edit) {
-      console.log('task details', taskDetail.subTasks);
-      const tempSubTasks = taskDetail.subTasks.map((t) => {
-        if (event.target.id === t._id) {
-          return { ...t, isDone: !t.isDone }
-        }
-        return t;
-      });
-      const check = handleSubTaskAndMainTaskRelation(tempSubTasks);
+      let temp = [...taskDetail.subTasks];
+      temp[index] = { ...temp[index], isDone: !temp[index].isDone }
+      const check = handleSubTaskAndMainTaskRelation(temp);
       setTaskDetail({
         ...taskDetail,
         isDone: check,
-        subTasks: tempSubTasks,
+        subTasks: temp
       })
     } else {
       setAlert({
@@ -97,7 +96,7 @@ export default function NestedListItem(props) {
       name: event.target.value
     });
   }
-  const addSubTaskSubmitHandler = () => {
+  const addSubTaskSubmitHandler = async () => {
     if (newSubTask.name === '') {
       return
     }
@@ -107,56 +106,39 @@ export default function NestedListItem(props) {
       ...taskDetail,
       subTasks: temp,
     })
-    singleTaskChangeHandler(taskDetail);
+    await singleTaskChangeHandler(taskDetail);
     setNewSubTask({
       isDone: false,
       name: "",
     });
     setAdd(false);
+    setTaskDetail({ ...taskDetail, isDone: false })
   }
-  const deleteSubTaskHandler = async (event) => {
-    console.log(event.target.id);
-    event.preventDefault();
-    // if (edit) {
-    //   const tempSubTasks = [];
-    //   taskDetail.subTasks.forEach((t) => {
-    //     if (event.target.id === t._id) {
-    //       return
-    //     }
-    //     tempSubTasks.push(t)
-    //   });
-    //   const check = handleSubTaskAndMainTaskRelation(tempSubTasks);
-    //   setTaskDetail({
-    //     ...taskDetail,
-    //     isDone: check,
-    //     subTasks: tempSubTasks,
-    //   })
-    // }
-    // setTaskDetail({
-    //   ...taskDetail,
-    //   isDone: check,
-    //   subTasks: tempSubTasks,
-    // })
-
-  }
-  const handleSubTaskTextChange = (event) => {
-    event.preventDefault();
-    const key = event.target.key;
-    console.log('key', event.target);
-    console.log('value', event.target.value);
+  const deleteSubTaskHandler = async (index) => {
     let temp = [...taskDetail.subTasks];
-    temp[key] = {
-      ...temp[key],
-      name: event.target.value,
-    }
+    temp.splice(index, 1);
     setTaskDetail({
       ...taskDetail,
       subTasks: temp
-    })
+    });
   }
-  const deleteTaskHandler = () => {
-    deleteATaskHandler(taskDetail._id);
+  const handleSubTaskTextChange = (event, index) => {
+    event.preventDefault();
+    let temp = [...taskDetail.subTasks];
+    temp[index] = { ...temp[index], name: event.target.value }
+    setTaskDetail({
+      ...taskDetail,
+      subTasks: temp
+    });
   }
+  const handleTaskTextChange = (event) => {
+    event.preventDefault();
+    setTaskDetail({
+      ...taskDetail,
+      taskName: event.target.value
+    });
+  }
+
 
   return (
     <List
@@ -174,11 +156,11 @@ export default function NestedListItem(props) {
           <ListItemIcon>
             <Checkbox {...label} checked={taskDetail.isDone} onChange={handleTaskCheck} />
           </ListItemIcon>
-          <TextField value={taskDetail.taskName} onChange={null} variant="standard" style={{ display: 'flex', flexDirection: 'column', alignContent: 'center', width: '100%' }} />
+          <TextField value={taskDetail.taskName} onChange={e => handleTaskTextChange(e)} variant="standard" style={{ display: 'flex', flexDirection: 'column', alignContent: 'center', width: '100%' }} />
           <SendIcon
             style={{ width: '30px', marginLeft: '15px', marginRight: '15px' }}
             onClick={changeSubmitHandler} />
-          <div style={{ width: '30px', marginLeft: '15px', marginRight: '15px' }} id={taskDetail._id} onClick={deleteTaskHandler}><DeleteIcon id={taskDetail._id} onClick={deleteTaskHandler} /></div>
+          <DeleteIcon id={taskDetail._id} onClick={e => deleteTaskHandler(taskDetail._id)} />
           <div style={{ width: '30px', marginLeft: '15px', marginRight: '15px' }} onClick={handleClick}> {open ? <ExpandLess /> : <ExpandMore />}</div>
         </ListItemButton> :
           <ListItemButton >
@@ -195,22 +177,21 @@ export default function NestedListItem(props) {
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           {
-            taskDetail.subTasks.map((t, k) => {
+            taskDetail.subTasks.map((t, index) => {
               return !edit ?
-                <ListItemButton key={k} sx={{ pl: 4 }}>
+                <ListItemButton key={index} sx={{ pl: 4 }}>
                   <ListItemIcon>
-                    <Checkbox key={k} {...label} id={t._id} checked={t.isDone} onClick={handleSubTaskCheck} />
+                    <Checkbox  {...label} checked={t.isDone} onClick={e => handleSubTaskCheck(index)} />
                   </ListItemIcon>
-                  <ListItemText key={k} primary={t.name} />
+                  <ListItemText primary={t.name} />
                 </ListItemButton>
                 :
-                <ListItemButton key={k} sx={{ pl: 4 }}>
+                <ListItemButton key={index} sx={{ pl: 4 }}>
                   <ListItemIcon>
-                    <Checkbox key={k} {...label} id={t._id} checked={t.isDone} onClick={handleSubTaskCheck} />
+                    <Checkbox  {...label} checked={t.isDone} onClick={e => handleSubTaskCheck(index)} />
                   </ListItemIcon>
-                  <TextField key={k} value={t.name} onChange={handleSubTaskTextChange} variant="standard" style={{ display: 'flex', flexDirection: 'column', alignContent: 'center', width: '100%' }} />
-                  <div style={{ width: '30px', marginLeft: '15px', marginRight: '15px' }} id={t._id} onClick={deleteSubTaskHandler} >  <DeleteIcon id={t._id} onClick={deleteSubTaskHandler} />
-                  </div>
+                  <TextField value={t.name} onChange={e => handleSubTaskTextChange(e, index)} variant="standard" style={{ display: 'flex', flexDirection: 'column', alignContent: 'center', width: '100%' }} />
+                  <DeleteIcon id={t._id} onClick={e => deleteSubTaskHandler(index)} />
                 </ListItemButton>
             })
           }
@@ -223,7 +204,6 @@ export default function NestedListItem(props) {
             :
             <ListItemButton sx={{ pl: 4 }}>
               <ListItemIcon>
-                <Checkbox {...label} checked={newSubTask.isDone} onClick={handleSubTaskCheck} />
               </ListItemIcon>
               <TextField value={newSubTask.name} onChange={addSubTaskChangeHandler} variant="standard" style={{ display: 'flex', flexDirection: 'column', alignContent: 'center', width: '100%' }} />
               <SendIcon onClick={addSubTaskSubmitHandler} />

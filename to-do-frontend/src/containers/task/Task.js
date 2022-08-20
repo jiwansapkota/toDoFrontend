@@ -10,7 +10,6 @@ import AppBar from '../../components/AppBar'
 import NestedListItem from '../../components/NestedListItem'
 import axios from '../../utils/axios-order'
 import CustomizedSnackbars from '../../components/CustomizedSnackbars'
-import { margin } from '@mui/system';
 
 function Task() {
   const [data, setData] = useState([]);
@@ -46,65 +45,52 @@ function Task() {
 
     })
   }, []);
-  const singleTaskChangeHandler = (task) => {
-    axios.post('/task/update', task).then((response) => {
+  const singleTaskChangeHandler = async (task) => {
+    try {
+      const response = await axios.post('/task/update', task);
       if (response.status === 200) {
         setData(response.data.data);
       } else {
         setAlert({
           show: true,
-          message: 'error while loading data',
+          message: 'error while updating data',
           severity: 'warning',
         })
       }
-    }).catch((e) => {
+    } catch (err) {
       setAlert({
         show: true,
-        message: e.message,
+        message: err.message,
         severity: 'error',
       })
-    })
+
+    }
   }
-  const deleteATaskHandler = (id) => {
-    axios.post('/task/delete', { id: id }).then((response) => {
-      if (response.status === 200) {
-        setData(response.data.data);
-      } else {
-        setAlert({
-          show: true,
-          message: 'error while loading data',
-          severity: 'warning',
-        })
+  const deleteATaskHandler = async (id) => {
+    try {
+      if (id !== "") {
+        const response = await axios.post('/task/delete', { id: id });
+        if (response.status === 200) {
+          setData(response.data.data);
+        } else {
+          setAlert({
+            show: true,
+            message: 'error while deleting data',
+            severity: 'warning',
+          })
+        }
       }
-    }).catch((e) => {
+    } catch (err) {
       setAlert({
         show: true,
-        message: e.message,
+        message: err.message,
         severity: 'error',
       })
-    })
+
+    }
 
   }
-  // const createNewTask = (task) => {
-  //   axios.post('/task/create', task, config).then((response) => {
-  //     if (response.status === 200) {
-  //       setData(response.data);
-  //     } else {
-  //       setAlert({
-  //         show: true,
-  //         message: 'error while loading data',
-  //         severity: 'warning',
-  //       })
-  //     }
-  //   }).catch((e) => {
-  //     setAlert({
-  //       show: true,
-  //       message: e.message,
-  //       severity: 'error',
-  //     })
-  //   })
-  // }
-
+  
   const addTaskChangeHandler = (event) => {
     event.preventDefault();
     setNewTask({
